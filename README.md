@@ -31,7 +31,7 @@ ecasp --help
 
 1. **create-data**: Read GTF/GFF and FASTA files and generate HDF5 datasets for training, validation, and testing.
 2. **train**: Train a base model on the generated HDF5 datasets without FiLM to learn general splice rules.
-3. **prepare_rbp_expression**: Build a tissue condition vector containing RBP + HVG features.
+3. **prepare-rbp-expression**: Build a tissue condition vector containing RBP + HVG features.
 4. **transfer**: Load a base-model checkpoint, enable FiLM, and fine-tune on tissue-specific data.
 5. **predict**: Use a tissue-specific model plus a condition vector to predict splice sites from FASTA input and output BED files.
 6. **variant**: Use a tissue-specific model plus a condition vector to annotate VCF variants for predicted splicing effects.
@@ -102,12 +102,12 @@ ecasp train \
 
 ---
 
-## 5. Step 3: Build a Tissue Condition Vector (`prepare_rbp_expression`)
+## 5. Step 3: Build a Tissue Condition Vector (`prepare-rbp-expression`)
 
 FiLM requires a fixed condition vector. The current workflow uses a single standardized matrix that already includes both RBP and HVG features, for example `data/tissue_expression_features_scaled.csv`, where rows are tissues and columns are features. Run:
 
 ```bash
-python -m openspliceai.scripts.prepare_rbp_expression \
+ecasp prepare-rbp-expression \
   --matrix /home1/xyf/project/github/OpenSpliceAI/data/tissue_expression_features_scaled.csv \
   --tissue limb \
   --output data/limb_features.json \
@@ -297,7 +297,7 @@ It is good practice to archive training logs and checkpoints together so differe
    Yes. If `--rbp-expression` is not provided, FiLM falls back to gamma = 1 and beta = 0, which is equivalent to the standard SpliceAI behavior. The program only errors when the checkpoint explicitly requires a nonzero `rbp_dim` and no vector is supplied.
 
 2. **How can I customize tissue features?**  
-   Concatenate any tissue-level features such as RBP TPM, highly variable gene expression, or UMAP coordinates into a CSV whose row names match `tissue_rbp_matrix.csv`. Then pass it through `--hvg-matrix` or replace the original matrix directly. `prepare_rbp_expression` will handle concatenation and standardization.
+   Concatenate any tissue-level features such as RBP TPM, highly variable gene expression, or UMAP coordinates into a CSV whose row names match `tissue_rbp_matrix.csv`. Then pass it through `--hvg-matrix` or replace the original matrix directly. `ecasp prepare-rbp-expression` will handle concatenation and standardization.
 
 3. **Can one training run cover multiple tissues?**  
    Yes. Use `--tissue-config` to provide multiple tissues with train/valid/test HDF5 files and matching condition vectors. `transfer` then performs mixed training with a shared FiLM branch.

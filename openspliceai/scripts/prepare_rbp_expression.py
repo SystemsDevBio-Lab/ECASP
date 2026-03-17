@@ -35,15 +35,22 @@ def prepare_expression(
     return expr
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Prepare a conditioning feature vector for FiLM.")
+def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("--matrix", required=True, type=Path, help="Path to tissue x feature CSV matrix (already包含 RBP + HVG).")
     parser.add_argument("--tissue", required=True, help="Tissue/condition name to extract.")
     parser.add_argument("--output", required=True, type=Path, help="Output file path (.json or .npy).")
     parser.add_argument("--format", choices=["json", "npy"], default="json", help="Output format.")
     parser.add_argument("--standardize", choices=["zscore", "minmax", "none"], default="none",
                         help="Normalization strategy applied to the feature vector (矩阵若已标准化建议用 none)。")
-    args = parser.parse_args()
+    return parser
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Prepare a conditioning feature vector for FiLM.")
+    return add_arguments(parser)
+
+
+def run(args: argparse.Namespace) -> RBPExpression:
     expr = prepare_expression(
         args.matrix,
         args.tissue,
@@ -52,6 +59,13 @@ def main():
         args.standardize,
     )
     print(f"Saved {expr.dim}-dimensional vector for '{args.tissue}' to {args.output} ({args.format}).")
+    return expr
+
+
+def main(argv=None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    run(args)
 
 
 if __name__ == "__main__":

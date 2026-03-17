@@ -15,6 +15,7 @@ from openspliceai.calibrate import calibrate
 from openspliceai.transfer import transfer
 from openspliceai.predict import predict
 from openspliceai.variant import variant
+from openspliceai.scripts import prepare_rbp_expression
 from openspliceai.train_base import utils as train_utils
 
 __VERSION__ = header.__version__
@@ -171,6 +172,15 @@ def parse_args_predict(subparsers):
     parser_predict.add_argument('--chunk-size', type=int, default=100, help='Chunk size for loading HDF5 dataset')
 
 
+def parse_args_prepare_rbp_expression(subparsers):
+    parser_prepare = subparsers.add_parser(
+        'prepare-rbp-expression',
+        aliases=['prepare_rbp_expression'],
+        help='Prepare a conditioning feature vector for ECASP FiLM.',
+    )
+    prepare_rbp_expression.add_arguments(parser_prepare)
+
+
 def parse_args_variant(subparsers):
     parser_variant = subparsers.add_parser('variant', help='Label genetic variations with their predicted ECASP splicing effects.')
     parser_variant.add_argument('-R', '--ref-genome', metavar='reference', required=True, help='path to the reference genome fasta file')
@@ -200,8 +210,9 @@ def parse_args(arglist):
         description='ECASP toolkit for splice prediction, retraining, and variant annotation',
     )
     # Create a parent subparser to house the common subcommands.
-    subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands: create-data, train, calibrate, predict, transfer, variant')
+    subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands: create-data, prepare-rbp-expression, train, calibrate, predict, transfer, variant')
     parse_args_create_data(subparsers)
+    parse_args_prepare_rbp_expression(subparsers)
     parse_args_train(subparsers)
     # parse_args_test(subparsers)
     parse_args_calibrate(subparsers)
@@ -236,6 +247,8 @@ Expression-Conditioned AI for Splicing Prediction
         create_dataset.create_dataset(args)
         if args.verify_h5:
             verify_h5_file.verify_h5(args)
+    elif args.command in {'prepare-rbp-expression', 'prepare_rbp_expression'}:
+        prepare_rbp_expression.run(args)
     elif args.command == 'train':
         train.train(args)
     # elif args.command == 'test':
@@ -248,3 +261,7 @@ Expression-Conditioned AI for Splicing Prediction
         predict.predict_cli(args)
     elif args.command == 'variant':
         variant.variant(args)
+
+
+if __name__ == "__main__":
+    main()
