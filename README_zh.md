@@ -1,7 +1,7 @@
 # ECASP 中文工作流指南
 
 <p align="center">
-  <img src="Logo.png" alt="ECASP logo" width="520">
+  <img src="Logo.png" alt="ECASP logo" width="600">
 </p>
 
 ECASP（Expression-Conditioned AI for Splicing Prediction）是在 PyTorch 中重构和扩展的剪接预测框架，实现了从原始基因组数据到剪接位点预测/变异注释的全流程。本指南以“从零到组织特异模型”的视角，覆盖数据准备、基础模型训练、FiLM 条件化微调以及变异注释等全部步骤，帮助你在自己的物种/组织上复现完整实验。
