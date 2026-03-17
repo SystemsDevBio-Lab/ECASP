@@ -1,0 +1,16 @@
+[
+  {
+    "name": "blood",
+    "train_dataset": "/path/blood/dataset_train.h5",
+    "valid_dataset": "/path/blood/dataset_validation.h5",
+    "test_dataset": "/path/blood/dataset_test.h5",
+    "rbp_expression": "data/blood_features.json"
+  },
+  {
+    "name": "neuron",
+    "train_dataset": "/path/neuron/dataset_train.h5",
+    "valid_dataset": "/path/neuron/dataset_validation.h5",
+    "test_dataset": "/path/neuron/dataset_test.h5",
+    "rbp_expression": "data/neuron_features.json"
+  }
+]
