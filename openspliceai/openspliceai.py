@@ -15,6 +15,7 @@ from openspliceai.calibrate import calibrate
 from openspliceai.transfer import transfer
 from openspliceai.predict import predict
 from openspliceai.variant import variant
+from openspliceai.scripts import gradient_rbp_attribution
 from openspliceai.scripts import prepare_rbp_expression
 from openspliceai.train_base import utils as train_utils
 
@@ -181,6 +182,15 @@ def parse_args_prepare_rbp_expression(subparsers):
     prepare_rbp_expression.add_arguments(parser_prepare)
 
 
+def parse_args_gradient_rbp_attribution(subparsers):
+    parser_gradient = subparsers.add_parser(
+        'gradient-rbp-attribution',
+        aliases=['gradient_rbp_attribution'],
+        help='Compute conditional-input RBP gradients for a single variant.',
+    )
+    gradient_rbp_attribution.add_arguments(parser_gradient)
+
+
 def parse_args_variant(subparsers):
     parser_variant = subparsers.add_parser('variant', help='Label genetic variations with their predicted ECASP splicing effects.')
     parser_variant.add_argument('-R', '--ref-genome', metavar='reference', required=True, help='path to the reference genome fasta file')
@@ -210,7 +220,7 @@ def parse_args(arglist):
         description='ECASP toolkit for splice prediction, retraining, and variant annotation',
     )
     # Create a parent subparser to house the common subcommands.
-    subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands: create-data, prepare-rbp-expression, train, calibrate, predict, transfer, variant')
+    subparsers = parser.add_subparsers(dest='command', required=True, help='Subcommands: create-data, prepare-rbp-expression, train, calibrate, predict, transfer, variant, gradient-rbp-attribution')
     parse_args_create_data(subparsers)
     parse_args_prepare_rbp_expression(subparsers)
     parse_args_train(subparsers)
@@ -219,6 +229,7 @@ def parse_args(arglist):
     parse_args_transfer(subparsers)
     parse_args_predict(subparsers)
     parse_args_variant(subparsers)
+    parse_args_gradient_rbp_attribution(subparsers)
     if arglist is not None:
         args = parser.parse_args(arglist)
     else:
@@ -249,6 +260,8 @@ Expression-Conditioned AI for Splicing Prediction
             verify_h5_file.verify_h5(args)
     elif args.command in {'prepare-rbp-expression', 'prepare_rbp_expression'}:
         prepare_rbp_expression.run(args)
+    elif args.command in {'gradient-rbp-attribution', 'gradient_rbp_attribution'}:
+        gradient_rbp_attribution.run(args)
     elif args.command == 'train':
         train.train(args)
     # elif args.command == 'test':

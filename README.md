@@ -202,3 +202,31 @@ ecasp predict \
 - To reproduce the paper workflow, use the final Stage 2 checkpoint and provide the real expression vector of the target developmental system during inference.
 - `--predict-all` first writes intermediate HDF5/pt files and then exports BED. Without it, BED files are written incrementally to save disk space.
 - The resulting `acceptor_predictions.bed` and `donor_predictions.bed` can be compared across systems such as limb vs neuron.
+
+---
+
+## RBP Gradient / Contribution Analysis
+
+If you want to inspect conditional-input gradients for a single variant in a given developmental-system context, use `ecasp gradient-rbp-attribution`. Its implementation lives in [`openspliceai/scripts/gradient_rbp_attribution.py`](openspliceai/scripts/gradient_rbp_attribution.py). The command below computes gradients for RBP/HVG features and writes the result to a TSV file:
+
+```bash
+ecasp gradient-rbp-attribution \
+  --variant 'chr17:28369751:G>GC' \
+  --gene VTN \
+  --model runs/stage2_reference/model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json \
+  --film-strengths 1 \
+  --target DS_AG \
+  --rank-metric grad \
+  --top-k 20 \
+  --output results/vtn_blood_rbp_gradient.tsv
+```
+
+Notes:
+
+- `--rank-metric grad` ranks by raw gradient; to rank by the paper-style contribution score, switch back to the default `--rank-metric gradxinput`.
+- The output includes both `grad` and `grad_x_input`, so one run lets you inspect raw gradients and contribution-style values together.
+- If you already have a curated RBP list, add `--rbp-only --rbp-list /path/all_RBP_gene_names.txt` to restrict the output to RBP features only.

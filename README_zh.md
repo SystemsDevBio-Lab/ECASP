@@ -200,3 +200,31 @@ ecasp predict \
 - 若要复现本文工作流，请使用第二阶段输出的最终 checkpoint，并在推理时传入目标 developmental system 的真实表达向量。
 - `--predict-all` 会先写中间 HDF5/pt，再生成 BED；关闭该选项则直接边预测边写 BED，节省磁盘。
 - 输出的 `acceptor_predictions.bed`、`donor_predictions.bed` 可按组织对比（如 limb vs neuron）。
+
+---
+
+## RBP 梯度 / contribution 分析
+
+若希望查看单个变异在给定 developmental system 背景下的条件输入梯度，可使用 `ecasp gradient-rbp-attribution`。其实现位于 [`openspliceai/scripts/gradient_rbp_attribution.py`](openspliceai/scripts/gradient_rbp_attribution.py)。下面的命令会对指定变异计算 RBP/HVG 特征的梯度，并将结果写成 TSV：
+
+```bash
+ecasp gradient-rbp-attribution \
+  --variant 'chr17:28369751:G>GC' \
+  --gene VTN \
+  --model runs/stage2_reference/model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json \
+  --film-strengths 1 \
+  --target DS_AG \
+  --rank-metric grad \
+  --top-k 20 \
+  --output results/vtn_blood_rbp_gradient.tsv
+```
+
+说明：
+
+- `--rank-metric grad` 用于查看原始梯度；若要按论文中的 contribution score 排序，可改为默认的 `--rank-metric gradxinput`。
+- 脚本输出同时包含 `grad` 和 `grad_x_input` 两列，因此一条命令即可同时查看梯度和 contribution。
+- 若你手头有 curated RBP 名单，可额外传入 `--rbp-only --rbp-list /path/all_RBP_gene_names.txt` 只保留 RBP 特征。
