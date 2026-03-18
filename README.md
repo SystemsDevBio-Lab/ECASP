@@ -1,7 +1,6 @@
 <p align="center">
   <img src="Logo.png" alt="ECASP logo" width="720">
 </p>
-
 ECASP (Expression-Conditioned AI for Splicing Prediction) is a splice prediction framework reconstructed and extended in PyTorch, covering the full workflow from raw genomic input to splice-site prediction and variant annotation. This guide follows the two-stage training strategy used in the current Methods: first jointly train ECASP across multiple developmental systems while keeping the FiLM conditional branch active, then freeze FiLM and fine-tune the sequence backbone on the reference dataset under a zero-vector condition. During inference and variant annotation, the true expression vector of the target system is injected again to obtain system-specific predictions.
 
 ## Quick Start
