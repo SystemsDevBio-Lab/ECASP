@@ -264,4 +264,4 @@ Notes:
 
 - `--rank-metric grad` ranks by raw gradient; to rank by the paper-style contribution score, switch back to the default `--rank-metric gradxinput`.
 - The output includes both `grad` and `grad_x_input`, so one run lets you inspect raw gradients and contribution-style values together.
-- To stay consistent with the curated RBP analysis in the paper, add `--rbp-only --rbp-list data/final_RBP_gene_names.txt` to restrict output to the bundled set of 344 curated RBPs, available at [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt).
+- To stay consistent with the curated RBP analysis in the paper, add `--rbp-only --rbp-list data/final_RBP_gene_names.txt` to restrict output to the bundled curated RBP set, available at [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt).

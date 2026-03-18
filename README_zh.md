@@ -262,4 +262,4 @@ ecasp gradient-rbp-attribution \
 
 - `--rank-metric grad` 用于查看原始梯度；若要按论文中的 contribution score 排序，可改为默认的 `--rank-metric gradxinput`。
 - 脚本输出同时包含 `grad` 和 `grad_x_input` 两列，因此一条命令即可同时查看梯度和 contribution。
-- 若要与论文中的 curated RBP 分析保持一致，可额外传入 `--rbp-only --rbp-list data/final_RBP_gene_names.txt`，仅保留仓库附带的 344 个 curated RBPs，见 [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt)。
+- 若要与论文中的 curated RBP 分析保持一致，可额外传入 `--rbp-only --rbp-list data/final_RBP_gene_names.txt`，仅保留仓库附带的 curated RBP 集合，见 [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt)。
