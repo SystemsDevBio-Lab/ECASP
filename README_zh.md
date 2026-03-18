@@ -6,6 +6,54 @@ ECASP（Expression-Conditioned AI for Splicing Prediction）是在 PyTorch 中�
 
 ---
 
+## Quick Start
+
+如果你只是想先快速跑通推理，而不是从头训练模型，可以直接使用仓库已附带的二阶段 ECASP checkpoint [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) 和现成的 system 条件向量 [`data/blood_features.json`](data/blood_features.json)。
+
+1. 安装：
+
+```bash
+pip install -e .
+ecasp --help
+```
+
+2. 直接运行 variant 注释：
+
+```bash
+ecasp variant \
+  --input /path/input.vcf \
+  --output /path/output_annotated.vcf \
+  --model checkpoints/ecasp_stage2_model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json
+```
+
+3. 查看该 system 背景下的 RBP/HVG 梯度或 contribution：
+
+```bash
+ecasp gradient-rbp-attribution \
+  --variant 'chr17:28369751:G>GC' \
+  --gene VTN \
+  --model checkpoints/ecasp_stage2_model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json \
+  --film-strengths 1 \
+  --target DS_AG \
+  --rank-metric gradxinput \
+  --top-k 20 \
+  --output /path/vtn_blood_rbp_gradient.tsv
+```
+
+如果要和 reference-only 基线比较，只需把 `--model` 切换为 [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt)。
+
+如果你想换成别的 developmental system，再使用 `ecasp prepare-rbp-expression` 从 [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv) 导出对应 JSON 即可。
+
+---
+
 ## 环境与资源
 
 - **依赖**：Python ≥ 3.10、PyTorch（GPU 训练建议 CUDA≥11.7）、NumPy/Pandas/HDF5/pyfaidx 等；执行 `pip install -e .` 会自动安装需要的 Python 包。
@@ -15,6 +63,7 @@ ECASP（Expression-Conditioned AI for Splicing Prediction）是在 PyTorch 中�
   - 组织/物种对应的 GTF/GFF 注释文件。仓库已附带 15 个最终 developmental-system 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。
   - SpliceAI 官方 annotation（示例：`data/grch38.txt`）或自定义注释。
   - 组织表达矩阵：已拼接且标准化的 RBP+HVG 矩阵，如 [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv)。
+  - 现成的 system 条件向量示例：[`data/blood_features.json`](data/blood_features.json)。
   - 轻量级 checkpoint：仓库已附带最终二阶段 ECASP 模型 [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) 和基线比较模型 [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt)。
 
 安装完成后可用下列命令快速检查：

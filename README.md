@@ -6,6 +6,54 @@ ECASP (Expression-Conditioned AI for Splicing Prediction) is a splice prediction
 
 ---
 
+## Quick Start
+
+If you mainly want to run inference first rather than retrain the whole pipeline, you can directly use the bundled Stage 2 ECASP checkpoint [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) together with the ready-to-use system condition vector [`data/blood_features.json`](data/blood_features.json).
+
+1. Install:
+
+```bash
+pip install -e .
+ecasp --help
+```
+
+2. Run variant annotation directly:
+
+```bash
+ecasp variant \
+  --input /path/input.vcf \
+  --output /path/output_annotated.vcf \
+  --model checkpoints/ecasp_stage2_model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json
+```
+
+3. Inspect RBP/HVG gradients or contribution scores in the same system context:
+
+```bash
+ecasp gradient-rbp-attribution \
+  --variant 'chr17:28369751:G>GC' \
+  --gene VTN \
+  --model checkpoints/ecasp_stage2_model_best.pt \
+  --ref-genome /path/genome.fa \
+  --annotation data/grch38_chr.txt \
+  --flanking-size 10000 \
+  --rbp-expression data/blood_features.json \
+  --film-strengths 1 \
+  --target DS_AG \
+  --rank-metric gradxinput \
+  --top-k 20 \
+  --output /path/vtn_blood_rbp_gradient.tsv
+```
+
+To compare against the reference-only baseline, simply switch `--model` to [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt).
+
+If you want a different developmental system, you can later export its JSON vector from [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv) via `ecasp prepare-rbp-expression`.
+
+---
+
 ## Environment and Resources
 
 - **Dependencies**: Python >= 3.10, PyTorch (CUDA >= 11.7 recommended for GPU training), NumPy/Pandas/HDF5/pyfaidx, and related packages. Running `pip install -e .` installs the required Python packages.
@@ -15,6 +63,7 @@ ECASP (Expression-Conditioned AI for Splicing Prediction) is a splice prediction
   - Tissue- or species-specific GTF/GFF annotation files. The repository already ships the 15 final developmental-system annotations under [`data/tissue_gff3/`](data/tissue_gff3).
   - SpliceAI annotation files (for example `data/grch38.txt`) or a custom annotation.
   - A concatenated and standardized RBP+HVG expression matrix, such as [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv).
+  - A ready-to-use example system vector: [`data/blood_features.json`](data/blood_features.json).
   - Lightweight checkpoints: the repository already includes the final Stage 2 ECASP model [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) and the baseline comparison model [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt).
 
 After installation, you can quickly verify the CLI with:
