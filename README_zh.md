@@ -1,10 +1,7 @@
 <p align="center">
   <img src="Logo.png" alt="ECASP logo" width="720">
 </p>
-
 ECASP（Expression-Conditioned AI for Splicing Prediction）是在 PyTorch 中重构和扩展的剪接预测框架，实现了从原始基因组数据到剪接位点预测/变异注释的全流程。本指南按当前 methods 中采用的两阶段训练主线组织：先在多个 developmental systems 上联合训练 ECASP（保留 FiLM 条件分支），再冻结 FiLM，使用 reference dataset 在零向量条件下微调 sequence backbone；最终在推理和 variant 注释阶段重新输入目标 system 的真实表达向量，从而得到 system-specific prediction。
-
----
 
 ## Quick Start
 
@@ -63,7 +60,6 @@ ecasp gradient-rbp-attribution \
 - [第一阶段：多组织联合训练 (`train`)](#train)
 - [第二阶段：冻结 FiLM 并用 reference data 微调 backbone (`transfer`)](#transfer)
 - [Variant 注释 (`variant`)](#variant)
-- [序列级预测 (`predict`)](#predict)
 - [RBP 梯度 / contribution 分析](#gradient-rbp-attribution)
 
 ---
@@ -98,7 +94,6 @@ ecasp --help
 - **train**：第一阶段，在多个 developmental systems 上联合训练 ECASP，FiLM 与 backbone 一起学习。
 - **transfer**：第二阶段，以第一阶段最佳 checkpoint 为起点，冻结 FiLM，在 reference dataset 上微调非 FiLM 参数。
 - **variant**：使用第二阶段最终模型 + 目标 system 条件向量，对 VCF 做 system-specific 剪接影响注释。
-- **predict**：使用第二阶段最终模型 + 目标 system 条件向量，对 FASTA 序列做 system-specific 剪接位点预测（输出 BED）。
 
 以下章节将详细说明每一步。
 
@@ -126,7 +121,7 @@ ecasp create-data \
   --min-identity 0.8 \
   --min-coverage 0.5
 ```
-仓库内已附带用于生成第一阶段多系统训练数据的 15 个最终 developmental-system GFF3 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。体量较大的多系统训练 HDF5 数据与 reference dataset 建议通过 Zenodo 单独分发；用于直接推理和对比的轻量级 checkpoint 则已随仓库提供在 [`checkpoints/`](checkpoints)。
+仓库内已附带用于生成第一阶段多系统训练数据的 15 个最终 developmental-system GFF3 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。
 ---
 
 <a id="prepare-rbp-expression"></a>
@@ -221,7 +216,7 @@ ecasp transfer \
 - `--rbp-expression data/zero_rbp_features.json` 提供 reference fine-tuning 所需的零向量输入，对应 methods 中的 neutral condition。
 - `--film-lr-mult 0.0` 会将 FiLM 分支学习率降为 0，从而冻结 FiLM；`--unfreeze-all` 允许其余非 FiLM 参数继续训练。
 - 与 `train` 相同，`train-dataset` 名称中包含 `train` 即可，程序会自动在同目录定位 `dataset_validation.h5`。
-- 第二阶段输出的 `runs/stage2_reference/model_best.pt` 才是后续 `predict` 和 `variant` 推荐使用的最终模型；仓库中已随附对应导出版本 [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) 供直接推理。
+- 第二阶段输出的 `runs/stage2_reference/model_best.pt` 是后续 `variant` 和梯度分析推荐使用的最终模型；仓库中已随附对应导出版本 [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) 供直接推理。
 - 与 reference-only 基线比较时，可使用 [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt)。
 
 代码层面仍支持单组织 transfer 或其他冻结策略，但若要与论文 methods 保持一致，应优先采用“第一阶段多组织联合训练 + 第二阶段冻结 FiLM、reference fine-tuning”这条主线。
@@ -235,7 +230,7 @@ ecasp transfer \
 
 ```bash
 ecasp variant \
-  --input data/decipher_variants_all.vcf \
+  --input /path/input.vcf \
   --output results/annotated_neuron.vcf \
   --model checkpoints/ecasp_stage2_model_best.pt \
   --ref-genome data/genome.fa \
@@ -248,31 +243,6 @@ ecasp variant \
 
 - 若 checkpoint 包含 FiLM/条件元数据，`variant` 会检查输入向量维度与名称；缺失或顺序错误会直接报错，避免预测偏差。
 - 复现本文分析时，推荐始终使用第二阶段最终 checkpoint，仅替换 `--rbp-expression` 以切换不同 developmental system；由于 checkpoint 相同，分数可直接跨系统比较。
-
----
-
-<a id="predict"></a>
-## 序列级预测 (`predict`)
-
-`predict` 现在支持 RBP/HVG 条件向量，可直接对 FASTA 序列输出组织特异的剪接位点 BED。示例：
-
-```bash
-ecasp predict \
-  --input-sequence data/neuron_genes.fa \
-  --model checkpoints/ecasp_stage2_model_best.pt \
-  --flanking-size 10000 \
-  --rbp-expression data/neuron_features.json \
-  --output-dir predict_out/neuron/ \
-  --threshold 1e-6 \
-  --predict-all
-```
-
-说明与注意：
-
-- `--rbp-expression` 与 `variant` 用法一致，必须与 FiLM checkpoint 中记录的 `rbp_dim`/`rbp_names` 对齐；缺失时会报错，维度或顺序不匹配也会报错。
-- 若要复现本文工作流，请使用第二阶段输出的最终 checkpoint，并在推理时传入目标 developmental system 的真实表达向量。
-- `--predict-all` 会先写中间 HDF5/pt，再生成 BED；关闭该选项则直接边预测边写 BED，节省磁盘。
-- 输出的 `acceptor_predictions.bed`、`donor_predictions.bed` 可按组织对比（如 limb vs neuron）。
 
 ---
 

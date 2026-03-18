@@ -60,7 +60,6 @@ If you want a different developmental system, you can later export its JSON vect
 - [Stage 1: Multi-System Joint Training (`train`)](#train)
 - [Stage 2: Freeze FiLM and Fine-Tune the Backbone on Reference Data (`transfer`)](#transfer)
 - [Variant Annotation (`variant`)](#variant)
-- [Sequence-Level Prediction (`predict`)](#predict)
 - [RBP Gradient / Contribution Analysis](#gradient-rbp-attribution)
 
 ---
@@ -95,7 +94,6 @@ ecasp --help
 - **train**: Stage 1, jointly train ECASP across multiple developmental systems with both FiLM and backbone enabled.
 - **transfer**: Stage 2, start from the best Stage 1 checkpoint, freeze FiLM, and fine-tune non-FiLM parameters on the reference dataset.
 - **variant**: Use the final Stage 2 model plus a target-system condition vector for system-specific VCF annotation.
-- **predict**: Use the final Stage 2 model plus a target-system condition vector for system-specific splice-site prediction from FASTA input.
 
 The sections below describe each step in detail.
 
@@ -124,7 +122,7 @@ ecasp create-data \
   --min-coverage 0.5
 ```
 
-The repository includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3). The larger multi-system HDF5 training data and the reference dataset are better distributed separately via Zenodo, while lightweight checkpoints for direct inference and baseline comparison are bundled under [`checkpoints/`](checkpoints).
+The repository already includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3).
 
 ---
 
@@ -148,7 +146,7 @@ Output format:
 
 ```json
 {
-  "values": [...],
+  "values": [...],          # RBP + HVG vector
   "rbp_names": ["feature1", "feature2", ...]
 }
 ```
@@ -220,7 +218,7 @@ ecasp transfer \
 - `--rbp-expression data/zero_rbp_features.json` provides the zero-vector input required for reference fine-tuning and corresponds to the neutral condition described in the Methods.
 - `--film-lr-mult 0.0` reduces the FiLM learning rate to zero and therefore freezes FiLM; `--unfreeze-all` allows all remaining non-FiLM parameters to continue training.
 - As in `train`, the `train-dataset` filename only needs to contain `train`; the program automatically resolves `dataset_validation.h5` in the same directory.
-- The final checkpoint from Stage 2, `runs/stage2_reference/model_best.pt`, is the recommended model for all downstream `predict` and `variant` runs; its exported copy is bundled in the repository as [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt).
+- The final checkpoint from Stage 2, `runs/stage2_reference/model_best.pt`, is the recommended model for downstream `variant` runs and gradient-based analyses; its exported copy is bundled in the repository as [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt).
 - For comparison against the reference-only baseline, use [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt).
 
 The code still supports single-tissue transfer or other freezing strategies, but if you want the workflow to match the paper Methods, the preferred path is: Stage 1 multi-system joint training followed by Stage 2 reference fine-tuning with FiLM frozen.
@@ -234,7 +232,7 @@ Finally, pass a VCF file to the system-specific model to obtain delta scores and
 
 ```bash
 ecasp variant \
-  --input data/decipher_variants_all.vcf \
+  --input /path/input.vcf \
   --output results/annotated_neuron.vcf \
   --model checkpoints/ecasp_stage2_model_best.pt \
   --ref-genome data/genome.fa \
@@ -247,31 +245,6 @@ ecasp variant \
 
 - If the checkpoint contains FiLM/conditioning metadata, `variant` validates the dimensionality and feature names of the input vector. Missing or misordered inputs will raise an error to avoid silent prediction bias.
 - To reproduce the paper workflow, always use the final Stage 2 checkpoint and only switch `--rbp-expression` to move between developmental systems. Because the checkpoint is fixed, scores remain directly comparable across systems.
-
----
-
-<a id="predict"></a>
-## Sequence-Level Prediction (`predict`)
-
-`predict` supports RBP/HVG condition vectors and can directly output tissue-specific splice-site BED files from FASTA input. Example:
-
-```bash
-ecasp predict \
-  --input-sequence data/neuron_genes.fa \
-  --model checkpoints/ecasp_stage2_model_best.pt \
-  --flanking-size 10000 \
-  --rbp-expression data/neuron_features.json \
-  --output-dir predict_out/neuron/ \
-  --threshold 1e-6 \
-  --predict-all
-```
-
-**Notes**:
-
-- `--rbp-expression` follows the same rule as in `variant`: it must match the `rbp_dim` and `rbp_names` recorded in the FiLM checkpoint. Missing or misordered vectors will raise an error.
-- To reproduce the paper workflow, use the final Stage 2 checkpoint and provide the real expression vector of the target developmental system during inference.
-- `--predict-all` first writes intermediate HDF5/pt files and then exports BED. Without it, BED files are written incrementally to save disk space.
-- The resulting `acceptor_predictions.bed` and `donor_predictions.bed` can be compared across systems such as limb vs neuron.
 
 ---
 
