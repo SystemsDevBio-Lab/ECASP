@@ -15,6 +15,7 @@ ECASP (Expression-Conditioned AI for Splicing Prediction) is a splice prediction
   - Tissue- or species-specific GTF/GFF annotation files. The repository already ships the 15 final developmental-system annotations under [`data/tissue_gff3/`](data/tissue_gff3).
   - SpliceAI annotation files (for example `data/grch38.txt`) or a custom annotation.
   - A concatenated and standardized RBP+HVG expression matrix, such as [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv).
+  - Lightweight checkpoints: the repository already includes the final Stage 2 ECASP model [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt) and the baseline comparison model [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt).
 
 After installation, you can quickly verify the CLI with:
 
@@ -60,7 +61,7 @@ ecasp create-data \
   --min-coverage 0.5
 ```
 
-The repository includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3). The larger multi-system HDF5 training data and the reference dataset are better distributed separately via Zenodo.
+The repository includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3). The larger multi-system HDF5 training data and the reference dataset are better distributed separately via Zenodo, while lightweight checkpoints for direct inference and baseline comparison are bundled under [`checkpoints/`](checkpoints).
 
 ---
 
@@ -153,7 +154,8 @@ ecasp transfer \
 - `--rbp-expression data/zero_rbp_features.json` provides the zero-vector input required for reference fine-tuning and corresponds to the neutral condition described in the Methods.
 - `--film-lr-mult 0.0` reduces the FiLM learning rate to zero and therefore freezes FiLM; `--unfreeze-all` allows all remaining non-FiLM parameters to continue training.
 - As in `train`, the `train-dataset` filename only needs to contain `train`; the program automatically resolves `dataset_validation.h5` in the same directory.
-- The final checkpoint from Stage 2, `runs/stage2_reference/model_best.pt`, is the recommended model for all downstream `predict` and `variant` runs.
+- The final checkpoint from Stage 2, `runs/stage2_reference/model_best.pt`, is the recommended model for all downstream `predict` and `variant` runs; its exported copy is bundled in the repository as [`checkpoints/ecasp_stage2_model_best.pt`](checkpoints/ecasp_stage2_model_best.pt).
+- For comparison against the reference-only baseline, use [`checkpoints/spliceai_reference_baseline_model_best.pt`](checkpoints/spliceai_reference_baseline_model_best.pt).
 
 The code still supports single-tissue transfer or other freezing strategies, but if you want the workflow to match the paper Methods, the preferred path is: Stage 1 multi-system joint training followed by Stage 2 reference fine-tuning with FiLM frozen.
 
@@ -167,7 +169,7 @@ Finally, pass a VCF file to the system-specific model to obtain delta scores and
 ecasp variant \
   --input data/decipher_variants_all.vcf \
   --output results/annotated_neuron.vcf \
-  --model runs/stage2_reference/model_best.pt \
+  --model checkpoints/ecasp_stage2_model_best.pt \
   --ref-genome data/genome.fa \
   --annotation data/grch38_chr.txt \
   --flanking-size 10000 \
@@ -188,7 +190,7 @@ ecasp variant \
 ```bash
 ecasp predict \
   --input-sequence data/neuron_genes.fa \
-  --model runs/stage2_reference/model_best.pt \
+  --model checkpoints/ecasp_stage2_model_best.pt \
   --flanking-size 10000 \
   --rbp-expression data/neuron_features.json \
   --output-dir predict_out/neuron/ \
@@ -213,7 +215,7 @@ If you want to inspect conditional-input gradients for a single variant in a giv
 ecasp gradient-rbp-attribution \
   --variant 'chr17:28369751:G>GC' \
   --gene VTN \
-  --model runs/stage2_reference/model_best.pt \
+  --model checkpoints/ecasp_stage2_model_best.pt \
   --ref-genome /path/genome.fa \
   --annotation data/grch38_chr.txt \
   --flanking-size 10000 \
