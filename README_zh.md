@@ -140,15 +140,6 @@ ecasp prepare-rbp-expression \
   --standardize none
 ```
 
-输出文件格式：
-
-```json
-{
-  "values": [...],          # RBP + HVG 向量
-  "rbp_names": ["feature1", "feature2", ...]
-}
-```
-
 其他系统同理，此外，第二阶段 reference fine-tuning 需要“中性条件”输入。仓库已提供 [`data/zero_rbp_features.json`](data/zero_rbp_features.json) / [`data/zero_rbp_features.npy`](data/zero_rbp_features.npy) 作为零向量，可直接用于这一阶段。
 
 ---
@@ -271,4 +262,4 @@ ecasp gradient-rbp-attribution \
 
 - `--rank-metric grad` 用于查看原始梯度；若要按论文中的 contribution score 排序，可改为默认的 `--rank-metric gradxinput`。
 - 脚本输出同时包含 `grad` 和 `grad_x_input` 两列，因此一条命令即可同时查看梯度和 contribution。
-- 若你手头有 curated RBP 名单，可额外传入 `--rbp-only --rbp-list /path/all_RBP_gene_names.txt` 只保留 RBP 特征。
+- 若要与论文中的 curated RBP 分析保持一致，可额外传入 `--rbp-only --rbp-list data/final_RBP_gene_names.txt`，仅保留仓库附带的 344 个 curated RBPs，见 [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt)。

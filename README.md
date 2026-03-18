@@ -142,15 +142,6 @@ ecasp prepare-rbp-expression \
   --standardize none
 ```
 
-Output format:
-
-```json
-{
-  "values": [...],          # RBP + HVG vector
-  "rbp_names": ["feature1", "feature2", ...]
-}
-```
-
 The same applies to other systems. In addition, Stage 2 reference fine-tuning requires a neutral condition input. The repository already provides [`data/zero_rbp_features.json`](data/zero_rbp_features.json) and [`data/zero_rbp_features.npy`](data/zero_rbp_features.npy) as the zero vector for this step.
 
 ---
@@ -273,4 +264,4 @@ Notes:
 
 - `--rank-metric grad` ranks by raw gradient; to rank by the paper-style contribution score, switch back to the default `--rank-metric gradxinput`.
 - The output includes both `grad` and `grad_x_input`, so one run lets you inspect raw gradients and contribution-style values together.
-- If you already have a curated RBP list, add `--rbp-only --rbp-list /path/all_RBP_gene_names.txt` to restrict the output to RBP features only.
+- To stay consistent with the curated RBP analysis in the paper, add `--rbp-only --rbp-list data/final_RBP_gene_names.txt` to restrict output to the bundled set of 344 curated RBPs, available at [`data/final_RBP_gene_names.txt`](data/final_RBP_gene_names.txt).
