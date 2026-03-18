@@ -54,6 +54,21 @@ If you want a different developmental system, you can later export its JSON vect
 
 ---
 
+## Contents
+
+- [Environment and Resources](#resources)
+- [Full Workflow Overview](#workflow-overview)
+- [Generate HDF5 Data (`create-data`)](#create-data)
+- [Build Condition Vectors (`prepare-rbp-expression`)](#prepare-rbp-expression)
+- [Stage 1: Multi-System Joint Training (`train`)](#train)
+- [Stage 2: Freeze FiLM and Fine-Tune the Backbone on Reference Data (`transfer`)](#transfer)
+- [Variant Annotation (`variant`)](#variant)
+- [Sequence-Level Prediction (`predict`)](#predict)
+- [RBP Gradient / Contribution Analysis](#gradient-rbp-attribution)
+
+---
+
+<a id="resources"></a>
 ## Environment and Resources
 
 - **Dependencies**: Python >= 3.10, PyTorch (CUDA >= 11.7 recommended for GPU training), NumPy/Pandas/HDF5/pyfaidx, and related packages. Running `pip install -e .` installs the required Python packages.
@@ -75,6 +90,7 @@ ecasp --help
 
 ---
 
+<a id="workflow-overview"></a>
 ## Full Workflow Overview
 
 - **create-data**: Prepare HDF5 datasets for both the reference dataset and multiple developmental systems (train/validation/test).
@@ -88,6 +104,7 @@ The sections below describe each step in detail.
 
 ---
 
+<a id="create-data"></a>
 ## Generate HDF5 Data (`create-data`)
 
 `create-data` performs two tasks: 1) `create_datafile` slices the annotation into sequence windows; 2) `create_dataset` exports HDF5 shards. A typical command is:
@@ -114,6 +131,7 @@ The repository includes the 15 final developmental-system GFF3 annotations used 
 
 ---
 
+<a id="prepare-rbp-expression"></a>
 ## Build Condition Vectors (`prepare-rbp-expression`)
 
 Before Stage 1 multi-system joint training, you first need a condition vector for each developmental system. The actual configuration format can be found in [`config/developmental_systems.example.json`](config/developmental_systems.example.json); files such as `data/blood_features.json` and `data/neuron_features.json` referenced there are exported from the shared expression matrix via `ecasp prepare-rbp-expression`.
@@ -142,6 +160,7 @@ The same applies to other systems. In addition, Stage 2 reference fine-tuning re
 
 ---
 
+<a id="train"></a>
 ## Stage 1: Multi-System Joint Training (`train`)
 
 After preparing condition vectors for each system, ECASP can be jointly trained across multiple developmental systems. Each system provides its own train/validation/test HDF5 files plus the corresponding condition vector. Training uses `--tissue-config` to mix mini-batches from different systems in a virtual mixed-batch scheme while sharing the same sequence backbone and FiLM branch.
@@ -175,6 +194,7 @@ ecasp train \
 
 ---
 
+<a id="transfer"></a>
 ## Stage 2: Freeze FiLM and Fine-Tune the Backbone on Reference Data (`transfer`)
 
 In the current Methods, Stage 2 starts from the best checkpoint of Stage 1 and continues training on the reference dataset. The two key points are: 1) the condition input is replaced with a zero vector so that this stage corresponds to a neutral condition; 2) the FiLM learning-rate multiplier is set to 0 so that only non-FiLM parameters are optimized, effectively freezing FiLM while fine-tuning the backbone/head.
@@ -210,6 +230,7 @@ The code still supports single-tissue transfer or other freezing strategies, but
 
 ---
 
+<a id="variant"></a>
 ## Variant Annotation (`variant`)
 
 Finally, pass a VCF file to the system-specific model to obtain delta scores and splice-site shifts:
@@ -232,6 +253,7 @@ ecasp variant \
 
 ---
 
+<a id="predict"></a>
 ## Sequence-Level Prediction (`predict`)
 
 `predict` supports RBP/HVG condition vectors and can directly output tissue-specific splice-site BED files from FASTA input. Example:
@@ -256,6 +278,7 @@ ecasp predict \
 
 ---
 
+<a id="gradient-rbp-attribution"></a>
 ## RBP Gradient / Contribution Analysis
 
 If you want to inspect conditional-input gradients for a single variant in a given developmental-system context, use `ecasp gradient-rbp-attribution`. Its implementation lives in [`ecasp/scripts/gradient_rbp_attribution.py`](ecasp/scripts/gradient_rbp_attribution.py). The command below computes gradients for RBP/HVG features and writes the result to a TSV file:

@@ -54,6 +54,21 @@ ecasp gradient-rbp-attribution \
 
 ---
 
+## 目录
+
+- [环境与资源](#resources)
+- [完整流程概览](#workflow-overview)
+- [生成 HDF5 数据 (`create-data`)](#create-data)
+- [生成条件向量 (`prepare-rbp-expression`)](#prepare-rbp-expression)
+- [第一阶段：多组织联合训练 (`train`)](#train)
+- [第二阶段：冻结 FiLM 并用 reference data 微调 backbone (`transfer`)](#transfer)
+- [Variant 注释 (`variant`)](#variant)
+- [序列级预测 (`predict`)](#predict)
+- [RBP 梯度 / contribution 分析](#gradient-rbp-attribution)
+
+---
+
+<a id="resources"></a>
 ## 环境与资源
 
 - **依赖**：Python ≥ 3.10、PyTorch（GPU 训练建议 CUDA≥11.7）、NumPy/Pandas/HDF5/pyfaidx 等；执行 `pip install -e .` 会自动安装需要的 Python 包。
@@ -75,6 +90,7 @@ ecasp --help
 
 ---
 
+<a id="workflow-overview"></a>
 ## 完整流程概览
 
 - **create-data**：分别准备 reference dataset 和多 developmental systems 的 HDF5 数据集（训练/验证/测试）。
@@ -88,6 +104,7 @@ ecasp --help
 
 ---
 
+<a id="create-data"></a>
 ## 生成 HDF5 数据 (`create-data`)
 
 `create-data` 会执行两件事：1) `create_datafile` 将注释切成序列窗口；2) `create_dataset` 输出 HDF5 分片。典型命令：
@@ -112,6 +129,7 @@ ecasp create-data \
 仓库内已附带用于生成第一阶段多系统训练数据的 15 个最终 developmental-system GFF3 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。体量较大的多系统训练 HDF5 数据与 reference dataset 建议通过 Zenodo 单独分发；用于直接推理和对比的轻量级 checkpoint 则已随仓库提供在 [`checkpoints/`](checkpoints)。
 ---
 
+<a id="prepare-rbp-expression"></a>
 ## 生成条件向量 (`prepare-rbp-expression`)
 
 在进入第一阶段多组织联合训练之前，需要先为每个 developmental system 准备条件向量。实际配置格式可参考 [`config/developmental_systems.example.json`](config/developmental_systems.example.json)；其中引用的 `data/blood_features.json`、`data/neuron_features.json` 这类文件，都是通过 `ecasp prepare-rbp-expression` 从共享表达矩阵导出的。
@@ -140,6 +158,7 @@ ecasp prepare-rbp-expression \
 
 ---
 
+<a id="train"></a>
 ## 第一阶段：多组织联合训练 (`train`)
 
 完成各 system 的条件向量准备后，即可在多个 developmental systems 上联合训练 ECASP。每个 system 提供独立的 train/validation/test HDF5 与对应条件向量；训练时通过 `--tissue-config` 以 virtual mixed-batch 方式混合各 system 的 mini-batch，并共享同一套 sequence backbone 与 FiLM 分支。
@@ -173,6 +192,7 @@ ecasp train \
 
 ---
 
+<a id="transfer"></a>
 ## 第二阶段：冻结 FiLM 并用 reference data 微调 backbone (`transfer`)
 
 当前 methods 中的第二阶段以上一步最佳 checkpoint 为起点，在 reference dataset 上继续训练。关键点有两个：1）条件输入改为零向量，使这一阶段对应“中性条件”；2）FiLM 分支学习率乘子设为 0，只更新非 FiLM 参数，从而实现“冻结 FiLM、微调 backbone/head”。
@@ -208,6 +228,7 @@ ecasp transfer \
 
 ---
 
+<a id="variant"></a>
 ## Variant 注释 (`variant`)
 
 最后，将 VCF 输入组织特异模型即可得到 delta 分数和剪接位点位移：
@@ -230,6 +251,7 @@ ecasp variant \
 
 ---
 
+<a id="predict"></a>
 ## 序列级预测 (`predict`)
 
 `predict` 现在支持 RBP/HVG 条件向量，可直接对 FASTA 序列输出组织特异的剪接位点 BED。示例：
@@ -254,6 +276,7 @@ ecasp predict \
 
 ---
 
+<a id="gradient-rbp-attribution"></a>
 ## RBP 梯度 / contribution 分析
 
 若希望查看单个变异在给定 developmental system 背景下的条件输入梯度，可使用 `ecasp gradient-rbp-attribution`。其实现位于 [`ecasp/scripts/gradient_rbp_attribution.py`](ecasp/scripts/gradient_rbp_attribution.py)。下面的命令会对指定变异计算 RBP/HVG 特征的梯度，并将结果写成 TSV：
