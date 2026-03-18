@@ -71,7 +71,7 @@ ecasp gradient-rbp-attribution \
 - **硬件**：基础模型/FiLM 微调建议使用至少 16GB GPU；Variant 注释可在 CPU 上运行但会较慢。
 - **基础数据**：
   - 参考基因组 FASTA（例：`data/genome.fa` + `.fai`）。
-  - 组织/物种对应的 GTF/GFF 注释文件。仓库已附带 15 个最终 developmental-system 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。
+  - 组织/物种对应的 GTF/GFF 注释文件。仓库仅附带一个示例 developmental-system 注释文件 [`data/tissue_gff3/blood.gff3`](data/tissue_gff3/blood.gff3)。
   - SpliceAI 官方 annotation（示例：`data/grch38.txt`）或自定义注释。
   - 组织表达矩阵：已拼接且标准化的 RBP+HVG 矩阵，如 [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv)。
   - 现成的 system 条件向量示例：[`data/blood_features.json`](data/blood_features.json)。
@@ -106,9 +106,9 @@ ecasp --help
 
 ```bash
 ecasp create-data \
-  --annotation-gff data/tissue_gff3/limb.gff3 \
+  --annotation-gff data/tissue_gff3/blood.gff3 \
   --genome-fasta data/genome.fa \
-  --output-dir /path/dataset_limb \
+  --output-dir /path/dataset_blood \
   --parse-type canonical \
   --biotype protein-coding \
   --chr-split train-test \
@@ -121,7 +121,7 @@ ecasp create-data \
   --min-identity 0.8 \
   --min-coverage 0.5
 ```
-仓库内已附带用于生成第一阶段多系统训练数据的 15 个最终 developmental-system GFF3 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。
+仓库内仅保留一个用于演示 `create-data` 的示例 GFF3 注释文件 [`data/tissue_gff3/blood.gff3`](data/tissue_gff3/blood.gff3)。若要复现论文中的多系统训练，请自行准备其他 developmental systems 的注释文件。
 ---
 
 <a id="prepare-rbp-expression"></a>

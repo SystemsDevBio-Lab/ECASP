@@ -71,7 +71,7 @@ If you want a different developmental system, you can later export its JSON vect
 - **Hardware**: At least 16 GB of GPU memory is recommended for base-model and FiLM fine-tuning. Variant annotation can run on CPU, but it will be slower.
 - **Core data**:
   - Reference genome FASTA (for example `data/genome.fa` plus `.fai`).
-  - Tissue- or species-specific GTF/GFF annotation files. The repository already ships the 15 final developmental-system annotations under [`data/tissue_gff3/`](data/tissue_gff3).
+  - Tissue- or species-specific GTF/GFF annotation files. The repository only keeps one example developmental-system annotation at [`data/tissue_gff3/blood.gff3`](data/tissue_gff3/blood.gff3).
   - SpliceAI annotation files (for example `data/grch38.txt`) or a custom annotation.
   - A concatenated and standardized RBP+HVG expression matrix, such as [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv).
   - A ready-to-use example system vector: [`data/blood_features.json`](data/blood_features.json).
@@ -106,9 +106,9 @@ The sections below describe each step in detail.
 
 ```bash
 ecasp create-data \
-  --annotation-gff data/tissue_gff3/limb.gff3 \
+  --annotation-gff data/tissue_gff3/blood.gff3 \
   --genome-fasta data/genome.fa \
-  --output-dir /path/dataset_limb \
+  --output-dir /path/dataset_blood \
   --parse-type canonical \
   --biotype protein-coding \
   --chr-split train-test \
@@ -121,8 +121,7 @@ ecasp create-data \
   --min-identity 0.8 \
   --min-coverage 0.5
 ```
-
-The repository already includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3).
+The repository only keeps one example GFF3 annotation for demonstrating `create-data`, available at [`data/tissue_gff3/blood.gff3`](data/tissue_gff3/blood.gff3). To reproduce the multi-system training setup used in the paper, you should prepare the annotations for the remaining developmental systems yourself.
 
 ---
 
