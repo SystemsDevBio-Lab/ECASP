@@ -12,7 +12,7 @@ ECASP（Expression-Conditioned AI for Splicing Prediction）是在 PyTorch 中�
 - **硬件**：基础模型/FiLM 微调建议使用至少 16GB GPU；Variant 注释可在 CPU 上运行但会较慢。
 - **基础数据**：
   - 参考基因组 FASTA（例：`data/genome.fa` + `.fai`）。
-  - 组织/物种对应的 GTF/GFF 注释文件。
+  - 组织/物种对应的 GTF/GFF 注释文件。仓库已附带 15 个最终 developmental-system 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。
   - SpliceAI 官方 annotation（示例：`data/grch38.txt`）或自定义注释。
   - 组织表达矩阵：已拼接且标准化的 RBP+HVG 矩阵，如 [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv)。
 
@@ -44,7 +44,7 @@ ecasp --help
 
 ```bash
 ecasp create-data \
-  --annotation-gff data/limb_filtered.gff3 \
+  --annotation-gff data/tissue_gff3/limb.gff3 \
   --genome-fasta data/genome.fa \
   --output-dir /path/dataset_limb \
   --parse-type canonical \
@@ -59,7 +59,7 @@ ecasp create-data \
   --min-identity 0.8 \
   --min-coverage 0.5
 ```
-我们生成的多组织训练数据见（xxxxxxxx），reference dataset 见（xxxxxxxxx）
+仓库内已附带用于生成第一阶段多系统训练数据的 15 个最终 developmental-system GFF3 注释文件，位于 [`data/tissue_gff3/`](data/tissue_gff3)。体量较大的多系统训练 HDF5 数据与 reference dataset 建议通过 Zenodo 单独分发。
 ---
 
 ## 生成条件向量 (`prepare-rbp-expression`)

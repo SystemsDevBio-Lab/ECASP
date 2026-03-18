@@ -12,7 +12,7 @@ ECASP (Expression-Conditioned AI for Splicing Prediction) is a splice prediction
 - **Hardware**: At least 16 GB of GPU memory is recommended for base-model and FiLM fine-tuning. Variant annotation can run on CPU, but it will be slower.
 - **Core data**:
   - Reference genome FASTA (for example `data/genome.fa` plus `.fai`).
-  - Tissue- or species-specific GTF/GFF annotation files.
+  - Tissue- or species-specific GTF/GFF annotation files. The repository already ships the 15 final developmental-system annotations under [`data/tissue_gff3/`](data/tissue_gff3).
   - SpliceAI annotation files (for example `data/grch38.txt`) or a custom annotation.
   - A concatenated and standardized RBP+HVG expression matrix, such as [`data/tissue_expression_features_scaled.csv`](data/tissue_expression_features_scaled.csv).
 
@@ -44,7 +44,7 @@ The sections below describe each step in detail.
 
 ```bash
 ecasp create-data \
-  --annotation-gff data/limb_filtered.gff3 \
+  --annotation-gff data/tissue_gff3/limb.gff3 \
   --genome-fasta data/genome.fa \
   --output-dir /path/dataset_limb \
   --parse-type canonical \
@@ -60,7 +60,7 @@ ecasp create-data \
   --min-coverage 0.5
 ```
 
-Our multi-system training dataset is shown in (xxxxxxxx), and the reference dataset in (xxxxxxxxx).
+The repository includes the 15 final developmental-system GFF3 annotations used to generate the Stage 1 multi-system training data under [`data/tissue_gff3/`](data/tissue_gff3). The larger multi-system HDF5 training data and the reference dataset are better distributed separately via Zenodo.
 
 ---
 
