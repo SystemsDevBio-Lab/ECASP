@@ -205,7 +205,7 @@ ecasp predict \
 
 ## RBP 梯度 / contribution 分析
 
-若希望查看单个变异在给定 developmental system 背景下的条件输入梯度，可使用 `ecasp gradient-rbp-attribution`。其实现位于 [`openspliceai/scripts/gradient_rbp_attribution.py`](openspliceai/scripts/gradient_rbp_attribution.py)。下面的命令会对指定变异计算 RBP/HVG 特征的梯度，并将结果写成 TSV：
+若希望查看单个变异在给定 developmental system 背景下的条件输入梯度，可使用 `ecasp gradient-rbp-attribution`。其实现位于 [`ecasp/scripts/gradient_rbp_attribution.py`](ecasp/scripts/gradient_rbp_attribution.py)。下面的命令会对指定变异计算 RBP/HVG 特征的梯度，并将结果写成 TSV：
 
 ```bash
 ecasp gradient-rbp-attribution \

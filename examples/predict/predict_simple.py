@@ -1,6 +1,6 @@
 '''Utilizing the simple predict function in python to get raw predictions for relatively smaller sequences'''
 
-from openspliceai.predict import predict
+from ecasp.predict import predict
 from pathlib import Path
 
 # Resolve the absolute path to parent dir

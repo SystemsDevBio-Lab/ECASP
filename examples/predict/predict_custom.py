@@ -1,6 +1,6 @@
 '''Full predict process with custom data processing, batch prediction, and file output'''
 
-from openspliceai.predict import predict
+from ecasp.predict import predict
 from pathlib import Path
 
 # Resolve the absolute path to parent dir

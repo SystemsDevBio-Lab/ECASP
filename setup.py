@@ -4,12 +4,12 @@ from pathlib import Path
 this_directory = Path(__file__).resolve().parent
 long_description = (this_directory / "./README.md").read_text()
 setuptools.setup(
-	name="openspliceai",
+	name="ecasp",
 	version="0.0.4",
 	author="Kuan-Hao Chao",
 	author_email="kh.chao@cs.jhu.edu",
 	description="Deep learning framework that decodes splicing across species",
-	url="https://github.com/Kuanhao-Chao/OpenSpliceAI",
+	url="https://github.com/SystemsDevBio-Lab/ECASP.git",
 	# install_requires= 
     install_requires=[
         'h5py>=3.9.0',
@@ -32,7 +32,7 @@ setuptools.setup(
     include_package_data=True,
 	python_requires='>=3.9',
 	packages=setuptools.find_packages(),
-	entry_points={'console_scripts': ['ecasp = openspliceai.openspliceai:main'], },
+	entry_points={'console_scripts': ['ecasp = ecasp.cli:main'], },
         long_description=long_description,
         long_description_content_type='text/markdown'
 )

@@ -207,7 +207,7 @@ ecasp predict \
 
 ## RBP Gradient / Contribution Analysis
 
-If you want to inspect conditional-input gradients for a single variant in a given developmental-system context, use `ecasp gradient-rbp-attribution`. Its implementation lives in [`openspliceai/scripts/gradient_rbp_attribution.py`](openspliceai/scripts/gradient_rbp_attribution.py). The command below computes gradients for RBP/HVG features and writes the result to a TSV file:
+If you want to inspect conditional-input gradients for a single variant in a given developmental-system context, use `ecasp gradient-rbp-attribution`. Its implementation lives in [`ecasp/scripts/gradient_rbp_attribution.py`](ecasp/scripts/gradient_rbp_attribution.py). The command below computes gradients for RBP/HVG features and writes the result to a TSV file:
 
 ```bash
 ecasp gradient-rbp-attribution \

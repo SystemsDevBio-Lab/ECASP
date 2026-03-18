@@ -5,7 +5,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PDIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
-# # Ensure the ECASP package (`openspliceai`) is installed
+# # Ensure the ECASP package (`ecasp`) is installed
 # pip install $PDIR
 
 # Define required arguments
